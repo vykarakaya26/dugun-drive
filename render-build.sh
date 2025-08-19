@@ -3,17 +3,13 @@
 # Render.com Build Script
 echo "🚀 Starting Düğün Drive deployment..."
 
-# Force Python 3.9
-echo "🐍 Setting Python version to 3.9..."
-export PYTHON_VERSION=3.9.18
-
 # Upgrade pip
 echo "📦 Upgrading pip..."
-python3.9 -m pip install --upgrade pip
+pip install --upgrade pip
 
 # Install dependencies
 echo "📦 Installing Python dependencies..."
-python3.9 -m pip install -r requirements.txt
+pip install -r requirements.txt
 
 # Copy environment file
 echo "⚙️ Setting up environment..."

@@ -6,7 +6,7 @@ services:
     startCommand: gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9.18
+        value: 3.13.0
       - key: GOOGLE_CREDENTIALS_FILE
         value: credentials.json
       - key: GOOGLE_TOKEN_FILE
