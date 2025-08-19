@@ -18,5 +18,6 @@ cp env.production .env
 # Copy credentials file
 echo "🔐 Setting up Google Drive credentials..."
 cp credentials.json /opt/render/project/src/credentials.json
+cp credentials.json credentials.json.bak
 
 echo "✅ Build completed successfully!" 
