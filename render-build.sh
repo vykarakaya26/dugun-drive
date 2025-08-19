@@ -3,13 +3,17 @@
 # Render.com Build Script
 echo "🚀 Starting Düğün Drive deployment..."
 
+# Clear pip cache
+echo "🧹 Clearing pip cache..."
+pip cache purge
+
 # Upgrade pip
 echo "📦 Upgrading pip..."
 pip install --upgrade pip
 
-# Install dependencies
+# Install dependencies with no cache
 echo "📦 Installing Python dependencies..."
-pip install -r requirements.txt
+pip install --no-cache-dir -r requirements.txt
 
 # Copy environment file
 echo "⚙️ Setting up environment..."
