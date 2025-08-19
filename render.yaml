@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: dugun-drive-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: GOOGLE_CREDENTIALS_FILE
+        value: credentials.json
+      - key: GOOGLE_TOKEN_FILE
+        value: token.json 

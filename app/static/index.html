@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Düğün Drive - Anılarınızı Paylaşın</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 50%, #48dbfb 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '💒';
+            font-size: 3em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .wedding-info {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .wedding-info h3 {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .upload-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 3px dashed #ff6b6b;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .upload-section:hover {
+            border-color: #feca57;
+            background: linear-gradient(135deg, #fff5f5 0%, #fff9e6 100%);
+            transform: scale(1.02);
+        }
+
+        .upload-section.dragover {
+            border-color: #48dbfb;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+            transform: scale(1.05);
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .upload-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .upload-desc {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .upload-tips {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 0.9em;
+            color: #856404;
+        }
+
+        .upload-tips h4 {
+            margin-bottom: 8px;
+            color: #856404;
+        }
+
+        .upload-tips ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .upload-tips li {
+            margin-bottom: 5px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .upload-tips li::before {
+            content: '📸';
+            position: absolute;
+            left: 0;
+        }
+
+        .drive-link-section {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            border: 2px solid #2196f3;
+        }
+
+        .drive-link-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+
+        .drive-link-btn {
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 20px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .drive-link-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(33, 150, 243, 0.3);
+        }
+
+        .qr-section {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            border: 2px solid #9c27b0;
+        }
+
+        .qr-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #7b1fa2;
+            margin-bottom: 15px;
+        }
+
+        .qr-code {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            display: inline-block;
+            margin: 10px;
+        }
+
+        .qr-download-btn {
+            background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            font-weight: bold;
+        }
+
+        .qr-download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(156, 39, 176, 0.3);
+        }
+
+        .files-section {
+            margin-top: 25px;
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+
+        .refresh-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 1em;
+            margin-bottom: 20px;
+            transition: border-color 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            background: white;
+        }
+
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .file-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 15px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #ff6b6b;
+        }
+
+        .file-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+        }
+
+        .file-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #ff6b6b;
+        }
+
+        .file-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 0.9em;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+
+        .file-info {
+            color: #666;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.7em;
+            transition: all 0.3s ease;
+            flex: 1;
+            max-width: 60px;
+        }
+
+        .download-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .view-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 4em;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #ff6b6b;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .camera-btn {
+            background: linear-gradient(135deg, #48dbfb 0%, #0abde3 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(72, 219, 251, 0.3);
+        }
+
+        .camera-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(72, 219, 251, 0.4);
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                border-radius: 0;
+                min-height: 100vh;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+
+            .files-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+            }
+
+            .file-card {
+                padding: 10px;
+            }
+
+            .file-icon {
+                font-size: 2em;
+            }
+
+            .file-name {
+                font-size: 0.8em;
+            }
+
+            .action-btn {
+                padding: 6px 8px;
+                font-size: 0.6em;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Düğün Drive</h1>
+            <p>Anılarınızı birlikte paylaşın</p>
+            
+            <div class="wedding-info">
+                <h3>💒 Ahmet & Ayşe Düğünü</h3>
+                <p>15 Ağustos 2024</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Upload Section -->
+            <div class="upload-section" id="uploadSection">
+                <span class="upload-icon">📸</span>
+                <div class="upload-title">Anılarınızı Yükleyin</div>
+                <div class="upload-desc">
+                    Düğünde çektiğiniz fotoğraf ve videoları buraya sürükleyip bırakın
+                </div>
+                
+                <input type="file" id="fileInput" class="file-input" multiple accept="image/*,video/*">
+                <input type="file" id="cameraInput" class="file-input" accept="image/*,video/*" capture>
+                
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-plus"></i> Dosya Seç
+                </button>
+                <button class="camera-btn" onclick="document.getElementById('cameraInput').click()">
+                    <i class="fas fa-camera"></i> Kamera ile Çek
+                </button>
+                
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <!-- Upload Tips -->
+            <div class="upload-tips">
+                <h4>💡 İpuçları:</h4>
+                <ul>
+                    <li>En iyi anları yakalayın</li>
+                    <li>Fotoğrafları dikey çekmeyi tercih edin</li>
+                    <li>Videoları kısa tutun (30 saniye)</li>
+                    <li>İnternet bağlantınızı kontrol edin</li>
+                </ul>
+            </div>
+
+            <!-- Google Drive Link Section -->
+            <div class="drive-link-section">
+                <div class="drive-link-title">📁 Google Drive Klasörü</div>
+                <p style="color: #1976d2; margin-bottom: 15px;">Tüm anılarınızı burada bulabilirsiniz</p>
+                <a href="#" class="drive-link-btn" id="driveLinkBtn" target="_blank">
+                    <i class="fas fa-external-link-alt"></i> Google Drive'ı Aç
+                </a>
+            </div>
+
+            <!-- QR Code Section -->
+            <div class="qr-section">
+                <div class="qr-title">📱 QR Kod</div>
+                <p style="color: #7b1fa2; margin-bottom: 15px;">Bu QR kodu paylaşarak misafirlerinizi davet edin</p>
+                <div class="qr-code" id="qrCode"></div>
+                <button class="qr-download-btn" onclick="downloadQR()">
+                    <i class="fas fa-download"></i> QR Kodu İndir
+                </button>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats" id="statsSection" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalFiles">0</div>
+                    <div class="stat-label">Toplam Dosya</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalSize">0 MB</div>
+                    <div class="stat-label">Toplam Boyut</div>
+                </div>
+            </div>
+
+            <!-- Files Section -->
+            <div class="files-section">
+                <div class="section-title">
+                    <span>📁 Anılarımız</span>
+                    <button class="refresh-btn" onclick="loadFiles()">
+                        <i class="fas fa-sync-alt"></i> Yenile
+                    </button>
+                </div>
+                
+                <input type="text" class="search-box" id="searchBox" placeholder="Anılarınızda arayın..." onkeyup="searchFiles()">
+                
+                <div id="filesContainer">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Anılar yükleniyor...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API URL - Production'da Render.com API'sini kullan, development'ta localhost
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? '/api/v1/drive' 
+            : 'https://dugun-drive-api.onrender.com/api/v1/drive';
+        let currentFiles = [];
+        let googleDriveFolderUrl = '';
+
+        // Generate QR Code
+        function generateQRCode() {
+            const currentUrl = window.location.href;
+            const qrCodeElement = document.getElementById('qrCode');
+            
+            QRCode.toCanvas(qrCodeElement, currentUrl, {
+                width: 200,
+                height: 200,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                }
+            }, function (error) {
+                if (error) console.error(error);
+            });
+        }
+
+        // Download QR Code
+        function downloadQR() {
+            const canvas = document.querySelector('#qrCode canvas');
+            if (canvas) {
+                const link = document.createElement('a');
+                link.download = 'dugun-drive-qr.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            }
+        }
+
+        // Update Google Drive link
+        function updateDriveLink() {
+            const driveLinkBtn = document.getElementById('driveLinkBtn');
+            if (googleDriveFolderUrl) {
+                driveLinkBtn.href = googleDriveFolderUrl;
+            } else {
+                // Default Google Drive link (will be updated when files are loaded)
+                driveLinkBtn.href = 'https://drive.google.com';
+            }
+        }
+
+        // Drag and drop functionality
+        const uploadSection = document.getElementById('uploadSection');
+        const fileInput = document.getElementById('fileInput');
+        const cameraInput = document.getElementById('cameraInput');
+
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            uploadFiles(files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            uploadFiles(e.target.files);
+        });
+
+        cameraInput.addEventListener('change', (e) => {
+            uploadFiles(e.target.files);
+        });
+
+        // Upload files
+        async function uploadFiles(files) {
+            for (let file of files) {
+                await uploadFile(file);
+            }
+            loadFiles();
+        }
+
+        async function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            
+            progressBar.style.display = 'block';
+            progressFill.style.width = '0%';
+
+            // Simulate progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress > 90) progress = 90;
+                progressFill.style.width = progress + '%';
+            }, 200);
+
+            try {
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+                
+                setTimeout(() => {
+                    progressBar.style.display = 'none';
+                    progressFill.style.width = '0%';
+                }, 500);
+                
+                if (result.success) {
+                    showMessage('Anınız başarıyla yüklendi! 🎉', 'success');
+                } else {
+                    showMessage(`Yükleme hatası: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                clearInterval(progressInterval);
+                progressBar.style.display = 'none';
+                progressFill.style.width = '0%';
+                showMessage(`Yükleme hatası: ${error.message}`, 'error');
+            }
+        }
+
+        // Load files
+        async function loadFiles() {
+            const container = document.getElementById('filesContainer');
+            container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Anılar yükleniyor...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/files`);
+                const data = await response.json();
+                
+                currentFiles = data.files;
+                displayFiles(currentFiles);
+                updateStats(currentFiles);
+                
+                // Update Google Drive link if we have files
+                if (currentFiles.length > 0 && currentFiles[0].web_view_link) {
+                    googleDriveFolderUrl = currentFiles[0].web_view_link.replace('/view', '');
+                    updateDriveLink();
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="error">Anılar yüklenirken hata oluştu: ${error.message}</div>`;
+            }
+        }
+
+        // Display files
+        function displayFiles(files) {
+            const container = document.getElementById('filesContainer');
+            
+            if (files.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span style="font-size: 4em;">📸</span>
+                        <h3>Henüz anı yok</h3>
+                        <p>İlk anınızı yüklemek için yukarıdaki bölümü kullanın</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const filesHTML = files.map(file => `
+                <div class="file-card">
+                    <div class="file-icon">
+                        ${getFileIcon(file.mime_type)}
+                    </div>
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-info">
+                        ${formatFileSize(file.size)} • ${formatDate(file.created_time)}
+                    </div>
+                    <div class="file-actions">
+                        <button class="action-btn view-btn" onclick="viewFile('${file.id}')" title="Görüntüle">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="action-btn download-btn" onclick="downloadFile('${file.id}')" title="İndir">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteFile('${file.id}')" title="Sil">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `<div class="files-grid">${filesHTML}</div>`;
+        }
+
+        // Update stats
+        function updateStats(files) {
+            const statsSection = document.getElementById('statsSection');
+            const totalFiles = document.getElementById('totalFiles');
+            const totalSize = document.getElementById('totalSize');
+            
+            if (files.length > 0) {
+                statsSection.style.display = 'grid';
+                totalFiles.textContent = files.length;
+                
+                const totalBytes = files.reduce((sum, file) => sum + (file.size || 0), 0);
+                totalSize.textContent = formatFileSize(totalBytes);
+            } else {
+                statsSection.style.display = 'none';
+            }
+        }
+
+        // Search files
+        function searchFiles() {
+            const query = document.getElementById('searchBox').value.toLowerCase();
+            const filteredFiles = currentFiles.filter(file => 
+                file.name.toLowerCase().includes(query)
+            );
+            displayFiles(filteredFiles);
+        }
+
+        // File actions
+        async function viewFile(fileId) {
+            try {
+                const response = await fetch(`${API_BASE}/files/${fileId}`);
+                const file = await response.json();
+                if (file.web_view_link) {
+                    window.open(file.web_view_link, '_blank');
+                } else {
+                    showMessage('Dosya görüntüleme linki bulunamadı', 'error');
+                }
+            } catch (error) {
+                showMessage(`Dosya görüntüleme hatası: ${error.message}`, 'error');
+            }
+        }
+
+        async function downloadFile(fileId) {
+            try {
+                window.open(`${API_BASE}/files/${fileId}/download`, '_blank');
+            } catch (error) {
+                showMessage(`İndirme hatası: ${error.message}`, 'error');
+            }
+        }
+
+        async function deleteFile(fileId) {
+            if (!confirm('Bu anıyı silmek istediğinizden emin misiniz?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/files/${fileId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showMessage('Anı başarıyla silindi!', 'success');
+                    loadFiles();
+                } else {
+                    showMessage('Anı silinirken hata oluştu', 'error');
+                }
+            } catch (error) {
+                showMessage(`Silme hatası: ${error.message}`, 'error');
+            }
+        }
+
+        // Utility functions
+        function getFileIcon(mimeType) {
+            if (mimeType.includes('image')) return '📸';
+            if (mimeType.includes('video')) return '🎥';
+            if (mimeType.includes('audio')) return '🎵';
+            if (mimeType.includes('pdf')) return '📄';
+            if (mimeType.includes('word')) return '📝';
+            if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return '📊';
+            if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return '📽️';
+            if (mimeType.includes('text')) return '📄';
+            return '📁';
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return 'Bilinmiyor';
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Bilinmiyor';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('tr-TR', {
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            
+            const content = document.querySelector('.content');
+            content.insertBefore(messageDiv, content.firstChild);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            generateQRCode();
+            updateDriveLink();
+            loadFiles();
+        });
+    </script>
+</body>
+</html> 
