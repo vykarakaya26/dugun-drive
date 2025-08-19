@@ -29,9 +29,15 @@ echo "🧹 Clearing cache..."
 find . -name "*.pyc" -delete
 find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 
-# Set environment variables
-echo "🔧 Setting environment variables..."
+# Set all environment variables automatically
+echo "🔧 Setting all environment variables automatically..."
 export PYTHON_VERSION=3.13.0
 export ENVIRONMENT=production
+export GOOGLE_CREDENTIALS_FILE=credentials.json
+export GOOGLE_TOKEN_FILE=token.json
+export API_TITLE="Düğün Drive API"
+export API_VERSION=1.0.0
+export API_DESCRIPTION="Düğün Drive integration API"
+export ALLOWED_ORIGINS='["http://localhost:3000","http://localhost:8080","http://localhost:8000","http://127.0.0.1:8000","https://*.netlify.app","https://*.onrender.com","https://dugun-drive.netlify.app","https://dugun-drive-api.onrender.com"]'
 
 echo "✅ Build completed successfully!" 

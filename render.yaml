@@ -13,6 +13,14 @@ services:
         value: token.json
       - key: ENVIRONMENT
         value: production
+      - key: API_TITLE
+        value: Düğün Drive API
+      - key: API_VERSION
+        value: 1.0.0
+      - key: API_DESCRIPTION
+        value: Düğün Drive integration API
+      - key: ALLOWED_ORIGINS
+        value: '["http://localhost:3000","http://localhost:8080","http://localhost:8000","http://127.0.0.1:8000","https://*.netlify.app","https://*.onrender.com","https://dugun-drive.netlify.app","https://dugun-drive-api.onrender.com"]'
     buildFilter:
       paths:
         - requirements.txt
