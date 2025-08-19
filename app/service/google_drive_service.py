@@ -3,6 +3,7 @@ import io
 from typing import List, Optional
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from google.oauth2.service_account import Credentials as ServiceAccountCredentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload, MediaIoBaseDownload
@@ -20,50 +21,42 @@ from app.core.models import FileInfo
 class GoogleDriveService:
     """Service for Google Drive operations"""
     
-    SCOPES = ['https://www.googleapis.com/auth/drive.file']
+    SCOPES = ['https://www.googleapis.com/auth/drive']
     
     def __init__(self):
         self.service = None
         self._authenticate()
     
     def _authenticate(self):
-        """Authenticate with Google Drive API"""
+        """Authenticate with Google Drive API. Prefer service account if provided."""
         creds = None
         
-        # Load existing token
+        # Prefer service account if the credentials.json is a service account key
+        if os.path.exists(settings.GOOGLE_CREDENTIALS_FILE):
+            try:
+                creds = ServiceAccountCredentials.from_service_account_file(
+                    settings.GOOGLE_CREDENTIALS_FILE,
+                    scopes=self.SCOPES
+                )
+                self.service = build('drive', 'v3', credentials=creds)
+                return
+            except Exception:
+                # Not a service account file; continue with user OAuth flows
+                pass
+
+        # Fallback: user OAuth (requires token.json; not suitable for headless prod)
         if os.path.exists(settings.GOOGLE_TOKEN_FILE):
             creds = Credentials.from_authorized_user_file(
                 settings.GOOGLE_TOKEN_FILE, self.SCOPES
             )
         
-        # If no valid credentials, get new ones
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                if not os.path.exists(settings.GOOGLE_CREDENTIALS_FILE):
-                    raise AuthenticationException(
-                        f"Credentials file not found: {settings.GOOGLE_CREDENTIALS_FILE}"
-                    )
-                
-                # Try both web and installed app flow
-                try:
-                    # First try as web application
-                    flow = InstalledAppFlow.from_client_secrets_file(
-                        settings.GOOGLE_CREDENTIALS_FILE, self.SCOPES
-                    )
-                    creds = flow.run_local_server(port=8080, open_browser=True)
-                except Exception as e:
-                    print(f"Web flow failed, trying console flow: {e}")
-                    # Fallback to console flow
-                    flow = InstalledAppFlow.from_client_secrets_file(
-                        settings.GOOGLE_CREDENTIALS_FILE, self.SCOPES
-                    )
-                    creds = flow.run_console()
-            
-            # Save credentials
-            with open(settings.GOOGLE_TOKEN_FILE, 'w') as token:
-                token.write(creds.to_json())
+                raise AuthenticationException(
+                    "OAuth token not found or invalid in server environment. Provide a Google service account key in credentials.json."
+                )
         
         self.service = build('drive', 'v3', credentials=creds)
     
