@@ -26,6 +26,7 @@ class Settings:
         "http://127.0.0.1:8000",
         "https://*.netlify.app",  # Netlify sites
         "https://*.onrender.com",  # Render.com API
+        "https://merry-puppy-cd728a.netlify.app",  # Specific Netlify site
     ]
 
 settings = Settings() 
