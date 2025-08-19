@@ -67,6 +67,23 @@ class GoogleDriveService:
         
         self.service = build('drive', 'v3', credentials=creds)
     
+    def _ensure_public_permission(self, file_id: str) -> None:
+        """Ensure the given file/folder is publicly readable via link."""
+        try:
+            self.service.permissions().create(
+                fileId=file_id,
+                body={
+                    'type': 'anyone',
+                    'role': 'reader',
+                },
+                fields='id'
+            ).execute()
+        except HttpError as error:
+            # Ignore if permission already exists or forbidden by policy
+            if getattr(error, 'resp', None) and getattr(error.resp, 'status', None) in (400, 403):
+                return
+            raise
+
     def _get_or_create_folder(self, folder_name: str = "Düğün Anıları") -> str:
         """Get or create a folder for wedding memories"""
         try:
@@ -91,7 +108,11 @@ class GoogleDriveService:
                 fields='id,name'
             ).execute()
             
-            return folder.get('id')
+            folder_id = folder.get('id')
+            # Make folder public to allow viewing with link
+            if folder_id:
+                self._ensure_public_permission(folder_id)
+            return folder_id
             
         except HttpError as error:
             print(f"Error creating folder: {error}")
@@ -123,7 +144,15 @@ class GoogleDriveService:
                 fields='id,name,webViewLink'
             ).execute()
             
-            return file.get('id')
+            file_id = file.get('id')
+            # Ensure the uploaded file is viewable via link (inherits from folder, but set explicitly too)
+            if file_id:
+                try:
+                    self._ensure_public_permission(file_id)
+                except Exception:
+                    # Non-fatal if we cannot set file permission
+                    pass
+            return file_id
             
         except HttpError as error:
             if error.resp.status == 403:
@@ -132,6 +161,18 @@ class GoogleDriveService:
                 raise UploadException("Invalid upload request")
             else:
                 raise UploadException(f"Upload failed: {error}")
+
+    def get_folder_link(self) -> Optional[str]:
+        """Return the public web link for the wedding folder."""
+        try:
+            folder_id = self._get_or_create_folder()
+            if not folder_id:
+                return None
+            # Ensure public permission (idempotent)
+            self._ensure_public_permission(folder_id)
+            return f"https://drive.google.com/drive/folders/{folder_id}"
+        except Exception:
+            return None
     
     def get_file_info(self, file_id: str) -> FileInfo:
         """Get file information by ID"""

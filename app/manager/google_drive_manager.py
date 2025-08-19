@@ -95,6 +95,13 @@ class GoogleDriveManager:
         except Exception as e:
             raise GoogleDriveException(f"Error downloading file: {str(e)}")
     
+    def get_folder_link(self) -> Optional[str]:
+        """Get public link to the wedding folder"""
+        try:
+            return getattr(self.drive_service, 'get_folder_link', lambda: None)()
+        except Exception as e:
+            raise GoogleDriveException(f"Error getting folder link: {str(e)}")
+    
     def search_files(self, query: str, page_size: int = 10) -> FileListResponse:
         """Search files in Google Drive"""
         try:

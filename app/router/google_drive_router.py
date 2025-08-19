@@ -129,3 +129,16 @@ async def search_files(
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "service": "Google Drive API"} 
+
+@router.get("/folder-link")
+async def get_folder_link(drive_manager: GoogleDriveManager = Depends(get_drive_manager)):
+    """Return public Google Drive folder link for uploads"""
+    try:
+        link = drive_manager.get_folder_link()
+        if not link:
+            raise HTTPException(status_code=500, detail="Folder link unavailable")
+        return {"folder_link": link}
+    except GoogleDriveException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")

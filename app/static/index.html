@@ -627,10 +627,20 @@
             const driveLinkBtn = document.getElementById('driveLinkBtn');
             if (googleDriveFolderUrl) {
                 driveLinkBtn.href = googleDriveFolderUrl;
-            } else {
-                // Default Google Drive link (will be updated when files are loaded)
-                driveLinkBtn.href = 'https://drive.google.com';
+                return;
             }
+            // Fetch from API
+            fetch(`${API_BASE}/folder-link`)
+              .then(r => r.ok ? r.json() : Promise.reject(r.statusText))
+              .then(d => {
+                  if (d.folder_link) {
+                      googleDriveFolderUrl = d.folder_link;
+                      driveLinkBtn.href = googleDriveFolderUrl;
+                  }
+              })
+              .catch(() => {
+                  driveLinkBtn.href = 'https://drive.google.com';
+              });
         }
 
         // Drag and drop functionality
