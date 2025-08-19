@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Düğün Drive - Anılarınızı Paylaşın</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -579,15 +578,7 @@
                 </a>
             </div>
 
-            <!-- QR Code Section -->
-            <div class="qr-section">
-                <div class="qr-title">📱 QR Kod</div>
-                <p style="color: #7b1fa2; margin-bottom: 15px;">Bu QR kodu paylaşarak misafirlerinizi davet edin</p>
-                <div class="qr-code" id="qrCode"></div>
-                <button class="qr-download-btn" onclick="downloadQR()">
-                    <i class="fas fa-download"></i> QR Kodu İndir
-                </button>
-            </div>
+
 
             <!-- Stats -->
             <div class="stats" id="statsSection" style="display: none;">
@@ -629,34 +620,7 @@
         let currentFiles = [];
         let googleDriveFolderUrl = '';
 
-        // Generate QR Code
-        function generateQRCode() {
-            const currentUrl = window.location.href;
-            const qrCodeElement = document.getElementById('qrCode');
-            
-            QRCode.toCanvas(qrCodeElement, currentUrl, {
-                width: 200,
-                height: 200,
-                margin: 2,
-                color: {
-                    dark: '#000000',
-                    light: '#FFFFFF'
-                }
-            }, function (error) {
-                if (error) console.error(error);
-            });
-        }
 
-        // Download QR Code
-        function downloadQR() {
-            const canvas = document.querySelector('#qrCode canvas');
-            if (canvas) {
-                const link = document.createElement('a');
-                link.download = 'dugun-drive-qr.png';
-                link.href = canvas.toDataURL();
-                link.click();
-            }
-        }
 
         // Update Google Drive link
         function updateDriveLink() {
@@ -730,8 +694,6 @@
                     body: formData
                 });
 
-                const result = await response.json();
-                
                 clearInterval(progressInterval);
                 progressFill.style.width = '100%';
                 
@@ -739,16 +701,24 @@
                     progressBar.style.display = 'none';
                     progressFill.style.width = '0%';
                 }, 500);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
                 
                 if (result.success) {
                     showMessage('Anınız başarıyla yüklendi! 🎉', 'success');
                 } else {
-                    showMessage(`Yükleme hatası: ${result.message}`, 'error');
+                    showMessage(`Yükleme hatası: ${result.message || 'Bilinmeyen hata'}`, 'error');
                 }
             } catch (error) {
                 clearInterval(progressInterval);
                 progressBar.style.display = 'none';
                 progressFill.style.width = '0%';
+                console.error('Upload error:', error);
                 showMessage(`Yükleme hatası: ${error.message}`, 'error');
             }
         }
@@ -933,7 +903,6 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            generateQRCode();
             updateDriveLink();
             loadFiles();
         });
