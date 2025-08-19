@@ -67,13 +67,50 @@ class GoogleDriveService:
         
         self.service = build('drive', 'v3', credentials=creds)
     
+    def _get_or_create_folder(self, folder_name: str = "Düğün Anıları") -> str:
+        """Get or create a folder for wedding memories"""
+        try:
+            # Search for existing folder
+            results = self.service.files().list(
+                q=f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false",
+                fields="files(id,name)"
+            ).execute()
+            
+            files = results.get('files', [])
+            if files:
+                return files[0]['id']
+            
+            # Create new folder if not exists
+            folder_metadata = {
+                'name': folder_name,
+                'mimeType': 'application/vnd.google-apps.folder'
+            }
+            
+            folder = self.service.files().create(
+                body=folder_metadata,
+                fields='id,name'
+            ).execute()
+            
+            return folder.get('id')
+            
+        except HttpError as error:
+            print(f"Error creating folder: {error}")
+            return None
+
     def upload_file(self, file_content: bytes, file_name: str, mime_type: str = None) -> str:
         """Upload file to Google Drive"""
         try:
             if not mime_type:
                 mime_type = 'application/octet-stream'
             
-            file_metadata = {'name': file_name}
+            # Get or create wedding folder
+            folder_id = self._get_or_create_folder()
+            
+            file_metadata = {
+                'name': file_name,
+                'parents': [folder_id] if folder_id else []
+            }
+            
             media = MediaIoBaseUpload(
                 io.BytesIO(file_content),
                 mimetype=mime_type,
@@ -125,9 +162,16 @@ class GoogleDriveService:
     def list_files(self, page_size: int = 10, page_token: str = None) -> tuple[List[FileInfo], str]:
         """List files in Google Drive"""
         try:
+            # Get wedding folder
+            folder_id = self._get_or_create_folder()
+            
+            # Query for files in the wedding folder
+            query = f"'{folder_id}' in parents and trashed=false" if folder_id else "trashed=false"
+            
             results = self.service.files().list(
                 pageSize=page_size,
                 pageToken=page_token,
+                q=query,
                 fields="nextPageToken, files(id,name,mimeType,size,createdTime,modifiedTime,webViewLink)"
             ).execute()
             
