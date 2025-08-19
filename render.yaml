@@ -10,4 +10,12 @@ services:
       - key: GOOGLE_CREDENTIALS_FILE
         value: credentials.json
       - key: GOOGLE_TOKEN_FILE
-        value: token.json 
+        value: token.json
+    buildFilter:
+      paths:
+        - requirements.txt
+        - render.yaml
+        - render-build.sh
+        - app/**
+        - env.production
+        - credentials.json 
