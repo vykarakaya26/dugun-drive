@@ -11,6 +11,8 @@ services:
         value: credentials.json
       - key: GOOGLE_TOKEN_FILE
         value: token.json
+      - key: ENVIRONMENT
+        value: production
     buildFilter:
       paths:
         - requirements.txt

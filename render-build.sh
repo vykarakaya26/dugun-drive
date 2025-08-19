@@ -29,4 +29,9 @@ echo "🧹 Clearing cache..."
 find . -name "*.pyc" -delete
 find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 
+# Set environment variables
+echo "🔧 Setting environment variables..."
+export PYTHON_VERSION=3.13.0
+export ENVIRONMENT=production
+
 echo "✅ Build completed successfully!" 
